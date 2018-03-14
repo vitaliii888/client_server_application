@@ -47,5 +47,5 @@ message = "get <key>\n"
 
 Метод `get` преобразует полученную строку в словарь, хранящий информацию о метриках в следующем формате:
 ```
-{key : [(timestamp_1, value_1), \dots, (timestamp_n, value_n)]}
+{key : [(timestamp_1, value_1), ..., (timestamp_n, value_n)]}
 ```
