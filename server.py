@@ -130,9 +130,15 @@ class ClientServerProtocol(asyncio.Protocol):
         self._buffer = b''
 
     def connection_made(self, transport):
+        # используем возможности асинхронной обработки 
+        # с помощью интерфейсов asyncio.Protocol
+        # и asyncio.Transport
         self.transport = transport
 
     def process_data(self, data):
+        """
+        Обработка данных, полученных от клиента.
+        """
 
         # разбор запроса и формирование списка команд
         commands = self.parser.decode(data)
@@ -147,13 +153,19 @@ class ClientServerProtocol(asyncio.Protocol):
         return self.parser.encode(responses)
 
     def data_received(self, data):
+        """
+        Получение данных от клиента и отправка их на обработку.
+        Отправка обратной связи клиенту.
+        """
 
         self._buffer += data
         try:
             decoded_data = self._buffer.decode()
         except UnicodeDecodeError:
             return
-
+        
+        # согласно протоколу запрос должен 
+        # заканчиваться символом конца строки
         if not decoded_data.endswith('\n'):
             return
 
@@ -162,11 +174,14 @@ class ClientServerProtocol(asyncio.Protocol):
         try:
             resp = self.process_data(decoded_data)
         except (ParseError, ExecutorError) as err:
+            # отлавливаем ошибки, которые были нами пойманы выше
+            # и возвращаем пользователю информацию о них
             self.transport.write(
                 "error\n{}\n\n".format(err).encode()
             )
             return
-
+        
+        # в случае успеха отправляет корректный ответ
         self.transport.write(resp.encode())
 
 
